@@ -1,28 +1,27 @@
 package Latihan01;
 
 public class Produk {
-    String nama;
-    int harga;
+    private String produk;
+    private long harga;
 
-    public Produk(String nama, int harga) {
-        this.nama = nama;
+    public Produk(String produk, long harga) {
+        this.produk = produk;
         this.harga = harga;
     }
 
     public String getProduk() {
-        return nama;
+        return produk;
     }
 
-    public void setProduk(String nama) {
-        this.nama = nama;
-    }
-
-    public int getHarga() {
+    public long getHarga() {
         return harga;
     }
 
-    public void setHarga(int harga) {
-        this.harga = harga;
+    public void setProduk(String produk) {
+        this.produk = produk;
     }
 
+    public void setHarga(long harga) {
+        this.harga = harga;
+    }
 }
