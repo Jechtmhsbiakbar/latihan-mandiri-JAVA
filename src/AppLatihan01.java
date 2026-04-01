@@ -266,7 +266,9 @@ public class AppLatihan01 {
 
     private static long hitungDiskon(Diskon aturanDiskon, int totalQtySemua, long subtotalSemua) {
         long diskon = 0;
-        if (aturanDiskon.getMIN_QTY_DISKON() > 0 && aturanDiskon.getDISKON_PERCENT() > 0 && totalQtySemua >= aturanDiskon.getMIN_QTY_DISKON()) {
+        if (aturanDiskon.getMIN_QTY_DISKON() > 0 &&
+                aturanDiskon.getDISKON_PERCENT() > 0 &&
+                totalQtySemua >= aturanDiskon.getMIN_QTY_DISKON()) {
 
             diskon = subtotalSemua * aturanDiskon.getDISKON_PERCENT() / 100;
         }
@@ -355,7 +357,8 @@ public class AppLatihan01 {
 
     }
 
-    private static void rincianDiskonDanPembayaran(StringBuilder totalSemuaProduk, long subtotalSemua, long diskon, long totalBiayaAkhir, PaymentEnumType typePembayaran) {
+    private static void rincianDiskonDanPembayaran(StringBuilder totalSemuaProduk, long subtotalSemua, long diskon,
+                                                   long totalBiayaAkhir, PaymentEnumType typePembayaran) {
         System.out.println("==========================================");
         System.out.println("                PEMBAYARAN");
         System.out.println("==========================================");
@@ -368,7 +371,8 @@ public class AppLatihan01 {
         System.out.print("Masukkan uang bayar : ");
     }
 
-    private static void strukPembayaranBerhasil(StringBuilder totalSemuaProduk, long totalBiayaAkhir, long hargaBayar, long kembalian, PaymentEnumType typePembayaran) {
+    private static void strukPembayaranBerhasil(StringBuilder totalSemuaProduk, long totalBiayaAkhir, long hargaBayar,
+                                                long kembalian, PaymentEnumType typePembayaran) {
         System.out.println("\n==========================================");
         System.out.println("          Pembayaran Berhasil!!\n");
         System.out.println(totalSemuaProduk);
@@ -423,7 +427,8 @@ public class AppLatihan01 {
         System.out.println("            Produk terpilih  ");
         for (int i = 0; i < keranjang.size(); i++) {
             ItemTransaksi item = keranjang.get(i);
-            System.out.println("\n" + (i + 1) + ". " + item.getProduk().getProduk() + " x" + item.getQty() + "\n     Subtotal : Rp. " + item.getSubtotal());
+            System.out.println("\n" + (i + 1) + ". " + item.getProduk().getProduk() + " x" + item.getQty() + "\n     " +
+                    "Subtotal : Rp. " + item.getSubtotal());
         }
         System.out.println("\nProduk berhasil ditambahkan ke transaksi!");
         System.out.println("Total sementara   : Rp. " + subtotalSementara + "\n");
