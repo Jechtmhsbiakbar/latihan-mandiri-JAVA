@@ -1,6 +1,10 @@
 import Latihan01.Diskon;
+import Latihan01.ItemTransaksi;
+import Latihan01.PaymentEnumType;
 import Latihan01.Produk;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class AppLatihan01 {
@@ -15,22 +19,15 @@ public class AppLatihan01 {
         allProduk[2] = new Produk("Teh Es", 5000);
         allProduk[3] = new Produk("Cappucino", 15000);
         allProduk[4] = new Produk("Fortuner", 100000000);
-        while (true) {
-            System.out.println("==========================================");
-            System.out.println("                 MENU");
-            System.out.println("==========================================");
 
-            System.out.println("1. Lihat Daftar Produk");
-            System.out.println("2. Tambah Produk");
-            System.out.println("3. Mode Pembelian");
-            System.out.println("4. Pengaturan");
-            System.out.println("5. End Program");
-            System.out.println("Ketik Pilihan : ");
-            System.out.print("(ketik hanya angka) : ");
+        while (true) {
+
+            showMenuPilihanAwal();
+
             int pilihan = input.nextInt();
             input.nextLine();
             if (pilihan == 1) {
-                showAll(allProduk);
+                showAllProduk(allProduk);
             } else if (pilihan == 2) {
                 for (int i = 0; i < allProduk.length; i++) {
                     if (allProduk[i] == null) {
@@ -64,29 +61,12 @@ public class AppLatihan01 {
         input.close();
     }
 
-    static void showAll(Produk[] object) {
-        System.out.println("\n" + "==========================================");
-        System.out.println("              Daftar Produk");
-        System.out.println("==========================================");
-        for (int i = 0; i < object.length; i++) {
-            if (object[i] != null) {
-
-                System.out.println("    No " + (i + 1) + ". Nama = " + object[i].getProduk() + " Rp. " + object[i].getHarga());
-
-            }
-        }
-        System.out.println("==========================================");
-    }
-
     static void modePembelian(Scanner input, Produk[] allProduk, Diskon aturanDiskon) {
-        Produk[] produkTerpilih = new Produk[1000];
-        int[] jumlahProdukTerpilih = new int[1000];
-        int indexKeranjang = 0;
-        long diskon = 0;
+        List<ItemTransaksi> keranjang = new ArrayList<>();
         StringBuilder totalSemuaProduk = new StringBuilder();
 
         while (true) {
-            showAll(allProduk);
+            showAllProduk(allProduk);
             System.out.println("Ketik nomor menu");
             System.out.print("(ketik hanya angka) : ");
 
@@ -110,29 +90,15 @@ public class AppLatihan01 {
                 continue;
             }
 
-            produkTerpilih[indexKeranjang] = selected;
-            jumlahProdukTerpilih[indexKeranjang] = totalBeli;
-            indexKeranjang++;
+            keranjang.add(new ItemTransaksi(selected, totalBeli));
 
             long subtotalSementara = 0;
-            for (int i = 0; i < indexKeranjang; i++) {
-                subtotalSementara += (produkTerpilih[i].getHarga() * jumlahProdukTerpilih[i]);
+            for (ItemTransaksi item : keranjang) {
+                subtotalSementara += item.getSubtotal();
             }
 
-            System.out.println("\n==========================================");
-            System.out.println("            Produk terpilih  ");
-            for (int i = 0; i < indexKeranjang; i++) {
-                long subTotal = produkTerpilih[i].getHarga() * jumlahProdukTerpilih[i];
-                System.out.println((i + 1) + ". " + produkTerpilih[i].getProduk() + " x" + jumlahProdukTerpilih[i] +
-                        "\n     Subtotal : Rp. " + subTotal);
-            }
-            System.out.println("\nProduk berhasil ditambahkan ke transaksi!");
-            System.out.println("Total sementara   : Rp. " + subtotalSementara + "\n");
+            showAllCart(keranjang, subtotalSementara);
 
-            System.out.println("Ingin beli lagi?");
-            System.out.println("1. Ya");
-            System.out.println("2. Selesai");
-            System.out.print("(ketik hanya angka) : ");
             int lanjut = input.nextInt();
             input.nextLine();
             if (lanjut == 2) {
@@ -140,100 +106,47 @@ public class AppLatihan01 {
             }
         }
 
-        int totalQtySemua = 0;
-        long subtotalSemua = 0;
 
-        if (indexKeranjang == 0) {
+        if (keranjang.isEmpty()) {
             System.out.println("Belum ada produk yang dibeli");
             return;
         }
+        int totalQtySemua = 0;
+        long subtotalSemua = 0;
 
-        for (int i = 0; i < indexKeranjang; i++) {
-            long subtotalItem = produkTerpilih[i].getHarga() * jumlahProdukTerpilih[i];
-            totalQtySemua += jumlahProdukTerpilih[i];
-            subtotalSemua += subtotalItem;
+        for (int i = 0; i < keranjang.size(); i++) {
+            ItemTransaksi item = keranjang.get(i);
+            totalQtySemua += item.getQty();
+            subtotalSemua += item.getSubtotal();
 
-            totalSemuaProduk.append((i + 1)).append(". ").append(produkTerpilih[i].getProduk()).append(" x").append(jumlahProdukTerpilih[i]).append(" = Rp. ").append(subtotalItem).append("\n");
+            totalSemuaProduk.append((i + 1)).append(". ")
+                    .append(item.getProduk().getProduk())
+                    .append(" x")
+                    .append(item.getQty()) // Ambil angkanya, bukan objek item-nya
+                    .append(" = Rp. ")
+                    .append(item.getSubtotal())
+                    .append("\n");
         }
 
-        if (aturanDiskon.getMIN_QTY_DISKON() > 0 &&
-                aturanDiskon.getDISKON_PERCENT() > 0 &&
-                totalQtySemua >= aturanDiskon.getMIN_QTY_DISKON()) {
 
-            diskon = subtotalSemua * aturanDiskon.getDISKON_PERCENT() / 100;
-        }
+        long diskon = hitungDiskon(aturanDiskon, totalQtySemua, subtotalSemua);
 
         long totalBiayaAkhir = subtotalSemua - diskon;
+        prosesPembayaran(input, totalSemuaProduk, totalQtySemua, subtotalSemua, diskon, totalBiayaAkhir);
 
-
-        System.out.println("==========================================");
-        System.out.println("                  RINCIAN");
-        System.out.println("==========================================");
-        System.out.println(totalSemuaProduk);
-        System.out.println("Total Qty        : " + totalQtySemua);
-        System.out.println("Subtotal         : Rp. " + subtotalSemua);
-        System.out.println("Diskon           : Rp. " + diskon);
-        System.out.println("Total Biaya      : Rp. " + totalBiayaAkhir + "\n");
-        System.out.println("Pilihan");
-        System.out.println("1. Bayar");
-        System.out.println("2. Batalkan");
-        System.out.println("Ketik pilihan : ");
-        System.out.print("(ketik hanya angka) : ");
-        int rincian = input.nextInt();
-        System.out.println("==========================================");
-        while (true) {
-            if (rincian == 1) {
-                System.out.println("==========================================");
-                System.out.println("                PEMBAYARAN");
-                System.out.println("==========================================");
-                System.out.println(totalSemuaProduk);
-                System.out.println("Subtotal         : Rp. " + subtotalSemua);
-                System.out.println("Diskon           : Rp. " + diskon);
-                System.out.println("Total Pembayaran : Rp. " + totalBiayaAkhir + "\n");
-
-                System.out.print("Masukkan uang bayar : ");
-                long hargaBayar = input.nextLong();
-                input.nextLine();
-
-                if (hargaBayar < totalBiayaAkhir) {
-                    System.out.println("Uang harus lebih atau pas dari nominal biaya belanja : Rp. " + totalBiayaAkhir);
-                    continue;
-
-                } else {
-                    long kembalian = hargaBayar - totalBiayaAkhir;
-                    System.out.println("\n==========================================");
-                    System.out.println("        Pembayaran Berhasil!!");
-                    System.out.println("Total Biaya      : Rp. " + totalBiayaAkhir);
-                    System.out.println("Total pembayaran : Rp. " + hargaBayar);
-                    System.out.println("Kembalian        : Rp. " + kembalian);
-                    System.out.println("Terimakasih atas pembayaran (Demo) nya");
-                    System.out.println("==========================================\n");
-                    break;
-                }
-
-            }
-            if (rincian == 2) {
-                System.out.println("Pembatalan pembayaran berhasil!\n");
-                break;
-            }
-        }
     }
 
 
     static void modePengaturan(Scanner input, Produk[] object, Diskon aturanDiskon) {
-        showAll(object);
 
-        System.out.println("Pilihan");
-        System.out.println("1. Ubah produk");
-        System.out.println("2. Hapus produk");
-        System.out.println("3. Edit Diskon");
+        showAllProduk(object);
 
-        System.out.println("Ketik pilihan : ");
-        System.out.print("(ketik hanya angka) : ");
+        showMenuPilihanPengaturan();
+
         int pilihan = input.nextInt();
 
         if (pilihan == 1) {
-            showAll(object);
+            showAllProduk(object);
             System.out.println("Ketik nomor menu yang mau di ubah");
             System.out.print("(ketik hanya angka) : ");
             int no = input.nextInt() - 1;
@@ -258,9 +171,9 @@ public class AppLatihan01 {
             object[no].setProduk(namaBaru);
             object[no].setHarga(hargaBaru);
             System.out.println("Berhasil di edit!!");
-            showAll(object);
+            showAllProduk(object);
         } else if (pilihan == 2) {
-            showAll(object);
+            showAllProduk(object);
             System.out.println("Ketik nomor menu yang mau di Hapus");
             System.out.print("(ketik hanya angka) : ");
             int no = input.nextInt() - 1;
@@ -290,7 +203,7 @@ public class AppLatihan01 {
                 object[object.length - 1] = null;
 
                 System.out.println("Berhasil dihapus!!\n");
-                showAll(object);
+                showAllProduk(object);
             } else if (opsiHapus == 2) {
                 System.out.println("Penghapusan dibatalkan.\n");
 
@@ -349,6 +262,176 @@ public class AppLatihan01 {
                 System.out.println("Pilihan tidak valid.\n");
             }
         }
+    }
+
+    private static long hitungDiskon(Diskon aturanDiskon, int totalQtySemua, long subtotalSemua) {
+        long diskon = 0;
+        if (aturanDiskon.getMIN_QTY_DISKON() > 0 && aturanDiskon.getDISKON_PERCENT() > 0 && totalQtySemua >= aturanDiskon.getMIN_QTY_DISKON()) {
+
+            diskon = subtotalSemua * aturanDiskon.getDISKON_PERCENT() / 100;
+        }
+        return diskon;
+    }
+
+    private static void prosesPembayaran(Scanner input, StringBuilder totalSemuaProduk, int totalQtySemua, long subtotalSemua,
+                                         long diskon, long totalBiayaAkhir) {
+        PaymentEnumType paymentEnumType = null;
+
+        System.out.println("==========================================");
+        System.out.println("                  RINCIAN");
+        System.out.println("==========================================");
+        System.out.println(totalSemuaProduk);
+        System.out.println("Total Qty        : " + totalQtySemua);
+        System.out.println("Subtotal         : Rp. " + subtotalSemua);
+        System.out.println("Diskon           : Rp. " + diskon);
+        System.out.println("Total Biaya      : Rp. " + totalBiayaAkhir + "\n");
+        System.out.println("Pilihan");
+        System.out.println("1. Bayar");
+        System.out.println("2. Batalkan");
+        System.out.println("Ketik pilihan : ");
+        System.out.print("(ketik hanya angka) : ");
+
+        int rincian = input.nextInt();
+        System.out.println("==========================================");
+        if (rincian == 1) {
+
+
+            System.out.println("==========================================");
+            System.out.println("        Piilh Metode Pembayaran");
+            System.out.println("1. CASH");
+            System.out.println("2. QRIS");
+            System.out.println("3. DEBIT");
+            System.out.println("Ketik pilihan : ");
+            System.out.print("(ketik hanya angka) : ");
+            while (true) {
+                int opsiPembayaran = input.nextInt();
+
+                if (opsiPembayaran == 1) {
+                    paymentEnumType = PaymentEnumType.CASH;
+                    System.out.println("Metode pembayaran menggunakan : " + paymentEnumType.name());
+                    rincianDiskonDanPembayaran(totalSemuaProduk, subtotalSemua, diskon, totalBiayaAkhir, paymentEnumType);
+                    break;
+                } else if (opsiPembayaran == 2) {
+                    paymentEnumType = PaymentEnumType.QRIS;
+                    System.out.println("Metode pembayaran menggunakan : " + paymentEnumType.name());
+                    rincianDiskonDanPembayaran(totalSemuaProduk, subtotalSemua, diskon, totalBiayaAkhir, paymentEnumType);
+                    break;
+                } else if (opsiPembayaran == 3) {
+                    paymentEnumType = PaymentEnumType.DEBIT;
+                    System.out.println("Metode pembayaran menggunakan : " + paymentEnumType.name());
+                    rincianDiskonDanPembayaran(totalSemuaProduk, subtotalSemua, diskon, totalBiayaAkhir, paymentEnumType);
+                    break;
+                } else {
+                    System.out.println("Pilihan opsi pembayaran tidak tersedia!!\n");
+                    System.out.println("Ketik pilihan : ");
+                    System.out.print("(ketik hanya angka) : ");
+                }
+            }
+
+
+            while (true) {
+
+                long hargaBayar = input.nextLong();
+                input.nextLine();
+
+                if (hargaBayar < totalBiayaAkhir) {
+                    System.out.println("Uang harus lebih atau pas dari nominal biaya belanja : Rp. " + totalBiayaAkhir);
+                    System.out.print("Masukkan uang bayar lagi : ");
+
+                } else {
+                    long kembalian = hargaBayar - totalBiayaAkhir;
+
+                    strukPembayaranBerhasil(totalSemuaProduk, totalBiayaAkhir, hargaBayar, kembalian, paymentEnumType);
+
+                    break;
+                }
+
+            }
+        } else if (rincian == 2) {
+            System.out.println("Pembatalan pembayaran berhasil!\n");
+        } else {
+            System.out.println("Pembatalan pembayaran berhasil!\n");
+        }
+
+    }
+
+    private static void rincianDiskonDanPembayaran(StringBuilder totalSemuaProduk, long subtotalSemua, long diskon, long totalBiayaAkhir, PaymentEnumType typePembayaran) {
+        System.out.println("==========================================");
+        System.out.println("                PEMBAYARAN");
+        System.out.println("==========================================");
+        System.out.println(totalSemuaProduk);
+        System.out.println("Subtotal           : Rp. " + subtotalSemua);
+        System.out.println("Diskon             : Rp. " + diskon);
+        System.out.println("Total Pembayaran   : Rp. " + totalBiayaAkhir + "\n");
+        System.out.println("Metode Pembayaran  : " + typePembayaran);
+
+        System.out.print("Masukkan uang bayar : ");
+    }
+
+    private static void strukPembayaranBerhasil(StringBuilder totalSemuaProduk, long totalBiayaAkhir, long hargaBayar, long kembalian, PaymentEnumType typePembayaran) {
+        System.out.println("\n==========================================");
+        System.out.println("          Pembayaran Berhasil!!\n");
+        System.out.println(totalSemuaProduk);
+        System.out.println("Metode Pembayaran  : " + typePembayaran);
+        System.out.println("Total Biaya        : Rp. " + totalBiayaAkhir);
+        System.out.println("Total pembayaran   : Rp. " + hargaBayar);
+        System.out.println("Kembalian          : Rp. " + kembalian);
+        System.out.println("Terimakasih atas pembayaran (Demo) nya");
+        System.out.println("==========================================\n");
+    }
+
+    private static void showMenuPilihanAwal() {
+        System.out.println("==========================================");
+        System.out.println("                 MENU");
+        System.out.println("==========================================");
+
+        System.out.println("1. Lihat Daftar Produk");
+        System.out.println("2. Tambah Produk");
+        System.out.println("3. Mode Pembelian");
+        System.out.println("4. Pengaturan");
+        System.out.println("5. End Program");
+        System.out.println("Ketik Pilihan : ");
+        System.out.print("(ketik hanya angka) : ");
+    }
+
+    private static void showMenuPilihanPengaturan() {
+        System.out.println("Pilihan");
+        System.out.println("1. Ubah produk");
+        System.out.println("2. Hapus produk");
+        System.out.println("3. Edit Diskon");
+
+        System.out.println("Ketik pilihan : ");
+        System.out.print("(ketik hanya angka) : ");
+    }
+
+    static void showAllProduk(Produk[] object) {
+        System.out.println("\n" + "==========================================");
+        System.out.println("              Daftar Produk");
+        System.out.println("==========================================");
+        for (int i = 0; i < object.length; i++) {
+            if (object[i] != null) {
+
+                System.out.println("    No " + (i + 1) + ". Nama = " + object[i].getProduk() + " Rp. " + object[i].getHarga());
+
+            }
+        }
+        System.out.println("==========================================");
+    }
+
+    private static void showAllCart(List<ItemTransaksi> keranjang, long subtotalSementara) {
+        System.out.println("\n==========================================");
+        System.out.println("            Produk terpilih  ");
+        for (int i = 0; i < keranjang.size(); i++) {
+            ItemTransaksi item = keranjang.get(i);
+            System.out.println("\n" + (i + 1) + ". " + item.getProduk().getProduk() + " x" + item.getQty() + "\n     Subtotal : Rp. " + item.getSubtotal());
+        }
+        System.out.println("\nProduk berhasil ditambahkan ke transaksi!");
+        System.out.println("Total sementara   : Rp. " + subtotalSementara + "\n");
+
+        System.out.println("Ingin beli lagi?");
+        System.out.println("1. Ya");
+        System.out.println("2. Selesai");
+        System.out.print("(ketik hanya angka) : ");
     }
 }
 

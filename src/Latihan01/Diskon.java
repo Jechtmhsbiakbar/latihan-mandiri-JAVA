@@ -1,8 +1,8 @@
 package Latihan01;
 
 public class Diskon {
-    private int MIN_QTY_DISKON = 5;
-    private int DISKON_PERCENT = 15;
+    private int MIN_QTY_DISKON = 30;
+    private int DISKON_PERCENT = 7;
 
     public int getMIN_QTY_DISKON() {
         return MIN_QTY_DISKON;
